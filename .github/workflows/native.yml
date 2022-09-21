@@ -16,7 +16,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest, alpine-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -30,6 +30,30 @@ jobs:
           sudo apt-get install g++-aarch64-linux-gnu
           sudo apt-get install gcc-arm-linux-gnueabihf
           sudo apt-get install g++-arm-linux-gnueabihf
+    - name: Setup Alpine
+      if: matrix.os == 'alpine-latest'
+      run: |
+          sudo apk add --no-cache \
+            ca-certificates \
+            less \
+            ncurses-terminfo-base \
+            krb5-libs \
+            libgcc \
+            libintl \
+            libssl1.1 \
+            libstdc++ \
+            tzdata \
+            userspace-rcu \
+            zlib \
+            icu-libs \
+            curl
+          sudo apk -X https://dl-cdn.alpinelinux.org/alpine/edge/main add --no-cache \
+            lttng-ust
+          curl -L https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/powershell-7.2.6-linux-alpine-x64.tar.gz -o /tmp/powershell.tar.gz
+          sudo mkdir -p /opt/microsoft/powershell/7
+          sudo tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
+          sudo chmod +x /opt/microsoft/powershell/7/pwsh
+          sudo apk add cmake gcc g++
     - name: Build
       run: |
           ./build_monocypher_native.ps1
